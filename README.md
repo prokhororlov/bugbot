@@ -1,9 +1,9 @@
 # BugBot
 
-Telegram bot that writes code via [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code). Each task gets its own git branch (via worktree), result is a PR. Works with Max/Pro subscription — **no API key needed**.
+Telegram bot that writes code via [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code). Each task gets its own git branch (via worktree), result is a PR/MR. Supports GitHub and GitLab. Works with Max/Pro subscription — **no API key needed**.
 
 ```
-Telegram → grammy bot (Node.js) → Claude Code CLI → git worktree → push → PR
+Telegram → Grammy (Node.js) → Claude Code CLI → git worktree → push → PR/MR
 ```
 
 ## Quick Start
@@ -13,7 +13,7 @@ Telegram → grammy bot (Node.js) → Claude Code CLI → git worktree → push 
 
 # 2. Install prerequisites (Node.js 20+ required)
 npm install -g @anthropic-ai/claude-code   # then run `claude` once to auth
-sudo apt install gh && gh auth login        # GitHub CLI
+sudo apt install gh && gh auth login        # GitHub CLI (or glab for GitLab)
 
 # 3. Clone, install, configure
 git clone <repo-url> bugbot && cd bugbot && npm install
@@ -56,12 +56,12 @@ sudo systemctl enable --now bugbot
 |---------|-------------|
 | `/start` | Welcome + command list |
 | `/new` | New session (branch + worktree) |
-| `/done` | Finish → push + create PR |
+| `/done` | Finish → push + create PR/MR |
 | `/status` | Current session info |
 | `/sessions` | All active sessions |
 | `/drop` | Delete session without PR |
-| `/deploy_dev` | Trigger dev deploy (admin) |
-| `/deploy_prod` | Trigger prod deploy (admin) |
+| `/merge_dev` | Merge dev branch (admin) |
+| `/merge_prod` | Merge prod branch (admin) |
 | `/id` | Your Telegram ID + GitHub username |
 
 ## Configuration (.env)
@@ -85,8 +85,11 @@ Key optional:
 | `MAX_ACTIVE_CHATS` | Max concurrent sessions | `3` |
 | `MODEL` | Claude model | default |
 | `SYSTEM_PROMPT` | System prompt override | auto |
-| `USER_GITHUB_MAP` | `tgId:ghUser,...` for PR reviewers | — |
-| `DEPLOY_ADMIN_ID` | Admin Telegram ID for /deploy | — |
+| `GIT_PLATFORM` | `github` or `gitlab` | `github` |
+| `USER_GITHUB_MAP` | `tgId:username,...` for PR/MR reviewers | — |
+| `MERGE_ADMIN_ID` | Admin Telegram ID for /merge_dev, /merge_prod | — |
+| `MERGE_DEV_BRANCH` | Target branch for /merge_dev | `PR_TARGET_BRANCH` |
+| `MERGE_PROD_BRANCH` | Target branch for /merge_prod | `main` |
 
 ## Project Structure
 

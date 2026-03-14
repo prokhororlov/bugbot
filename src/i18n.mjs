@@ -10,8 +10,8 @@ const translations = {
     cmd_status: "Current session status",
     cmd_sessions: "All active sessions",
     cmd_drop: "Delete session without PR",
-    cmd_deploy_dev: "Deploy dev (admin)",
-    cmd_deploy_prod: "Deploy prod (admin)",
+    cmd_merge_dev: "Merge dev (admin)",
+    cmd_merge_prod: "Merge prod (admin)",
     cmd_id: "My Telegram ID",
 
     // bot.mjs — startup logs (console, not translated to keep logs in English)
@@ -26,8 +26,8 @@ const translations = {
       "/status — current session status\n" +
       "/sessions — all active sessions\n" +
       "/drop — delete session without PR\n" +
-      "/deploy_dev — deploy dev (admin)\n" +
-      "/deploy_prod — deploy prod (admin)\n" +
+      "/merge_dev — merge dev branch (admin)\n" +
+      "/merge_prod — merge prod branch (admin)\n" +
       "/id — your Telegram ID",
 
     // commands.mjs — /new
@@ -82,20 +82,18 @@ const translations = {
       `Telegram ID: <code>${tgId}</code>\n` +
       `GitHub: <code>${ghUser || "not set"}</code>`,
 
-    // commands.mjs — /deploy_dev, /deploy_prod
+    // commands.mjs — /merge_dev, /merge_prod
     admin_only: "This command is admin-only.",
-    deploying_dev: "Starting dev deploy...",
-    deploy_dev_ok: "Workflow 'Deploy Dev' started.\nCheck GitHub Actions for status.\n\nAfter verifying dev, deploy to prod: /deploy_prod",
-    deploy_dev_api_ok: "Dev deploy started via API.\n\nAfter verifying dev, deploy to prod: /deploy_prod",
-    deploy_dev_failed: (err) => `Failed to start dev deploy: ${err}`,
-    deploy_prod_blocked_none: "Dev has not been deployed yet.",
-    deploy_prod_blocked_failed: "Last dev deploy failed.",
-    deploy_prod_blocked_running: "Dev deploy is still running.",
-    deploy_prod_blocked: (reason) => `Cannot deploy to prod.\n${reason}\n\nRun /deploy_dev first`,
-    deploying_prod: "Starting prod deploy...",
-    deploy_prod_ok: "Workflow 'Deploy Prod' started.\nCheck GitHub Actions for status.",
-    deploy_prod_api_ok: "Prod deploy started via API.",
-    deploy_prod_failed: (err) => `Failed to start prod deploy: ${err}`,
+    merging_dev: (src, dst) => `Merging ${src} into ${dst}...`,
+    merge_dev_ok: (src, dst) => `Merged ${src} into ${dst} and pushed.\n\nAfter verifying, merge to prod: /merge_prod`,
+    merge_dev_failed: (err) => `Merge dev failed: ${err}`,
+    merge_prod_blocked_none: "Dev has not been merged yet.",
+    merge_prod_blocked_failed: "Last dev merge failed.",
+    merge_prod_blocked_running: "Dev merge is still running.",
+    merge_prod_blocked: (reason) => `Cannot merge to prod.\n${reason}\n\nRun /merge_dev first`,
+    merging_prod: (src, dst) => `Merging ${src} into ${dst}...`,
+    merge_prod_ok: (src, dst) => `Merged ${src} into ${dst} and pushed.`,
+    merge_prod_failed: (err) => `Merge prod failed: ${err}`,
 
     // messages.mjs
     request_in_progress: "Previous request is still running. Please wait.",
@@ -151,8 +149,8 @@ const translations = {
     cmd_status: "Статус текущей сессии",
     cmd_sessions: "Все активные сессии",
     cmd_drop: "Удалить сессию без PR",
-    cmd_deploy_dev: "Деплой dev (admin)",
-    cmd_deploy_prod: "Деплой prod (admin)",
+    cmd_merge_dev: "Мерж dev (admin)",
+    cmd_merge_prod: "Мерж prod (admin)",
     cmd_id: "Мой Telegram ID",
 
     start_hello:
@@ -164,8 +162,8 @@ const translations = {
       "/status — статус текущей сессии\n" +
       "/sessions — все активные сессии\n" +
       "/drop — удалить текущую сессию без PR\n" +
-      "/deploy_dev — деплой dev (admin)\n" +
-      "/deploy_prod — деплой prod (admin)\n" +
+      "/merge_dev — мерж dev ветки (admin)\n" +
+      "/merge_prod — мерж prod ветки (admin)\n" +
       "/id — твой Telegram ID",
 
     old_session_deleted: (branch) => `Старая сессия <code>${branch}</code> удалена.`,
@@ -215,18 +213,16 @@ const translations = {
       `GitHub: <code>${ghUser || "не задан"}</code>`,
 
     admin_only: "Команда доступна только администратору.",
-    deploying_dev: "Запускаю деплой dev...",
-    deploy_dev_ok: "Workflow 'Deploy Dev' запущен.\nСледи за статусом на GitHub Actions.\n\nПосле проверки dev можно деплоить в прод: /deploy_prod",
-    deploy_dev_api_ok: "Deploy dev запущен через API.\n\nПосле проверки dev можно деплоить в прод: /deploy_prod",
-    deploy_dev_failed: (err) => `Не удалось запустить деплой dev: ${err}`,
-    deploy_prod_blocked_none: "Dev ещё не был задеплоен.",
-    deploy_prod_blocked_failed: "Последний деплой dev завершился с ошибкой.",
-    deploy_prod_blocked_running: "Деплой dev ещё выполняется.",
-    deploy_prod_blocked: (reason) => `Нельзя деплоить в прод.\n${reason}\n\nСначала выполни /deploy_dev`,
-    deploying_prod: "Запускаю деплой prod...",
-    deploy_prod_ok: "Workflow 'Deploy Prod' запущен.\nСледи за статусом на GitHub Actions.",
-    deploy_prod_api_ok: "Deploy prod запущен через API.",
-    deploy_prod_failed: (err) => `Не удалось запустить деплой prod: ${err}`,
+    merging_dev: (src, dst) => `Мержу ${src} в ${dst}...`,
+    merge_dev_ok: (src, dst) => `${src} вмержен в ${dst} и запушен.\n\nПосле проверки можно мержить в прод: /merge_prod`,
+    merge_dev_failed: (err) => `Не удалось выполнить мерж dev: ${err}`,
+    merge_prod_blocked_none: "Dev ещё не был вмержен.",
+    merge_prod_blocked_failed: "Последний мерж dev завершился с ошибкой.",
+    merge_prod_blocked_running: "Мерж dev ещё выполняется.",
+    merge_prod_blocked: (reason) => `Нельзя мержить в прод.\n${reason}\n\nСначала выполни /merge_dev`,
+    merging_prod: (src, dst) => `Мержу ${src} в ${dst}...`,
+    merge_prod_ok: (src, dst) => `${src} вмержен в ${dst} и запушен.`,
+    merge_prod_failed: (err) => `Не удалось выполнить мерж prod: ${err}`,
 
     request_in_progress: "Предыдущий запрос ещё выполняется. Подожди.",
     rate_limit_hit: (msgs, sec) => `Лимит: ${msgs} сообщений за ${sec}с.`,

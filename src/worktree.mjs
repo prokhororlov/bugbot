@@ -3,6 +3,7 @@ import { join } from "node:path";
 import {
   PROJECT_DIR,
   PR_TARGET_BRANCH,
+  GIT_PLATFORM,
   WORKTREE_MODE,
   WORKTREE_BASE_DIR,
   USER_GITHUB_MAP,
@@ -51,7 +52,8 @@ export function pushBranch(branchName, wtPath) {
 }
 
 export function createPR(branchName, title, body, requestorUserId) {
-  let cmd = `gh pr create --base "${PR_TARGET_BRANCH}" --head "${branchName}" --title "${title.replace(/"/g, '\\"')}" --body "${body.replace(/"/g, '\\"')}"`;
+  const safeTitle = title.replace(/"/g, '\\"');
+  const safeBody = body.replace(/"/g, '\\"');
 
   const reviewers = [];
   for (const [tgId, ghUsername] of USER_GITHUB_MAP) {
@@ -59,8 +61,18 @@ export function createPR(branchName, title, body, requestorUserId) {
       reviewers.push(ghUsername);
     }
   }
-  if (reviewers.length > 0) {
-    cmd += ` --reviewer "${reviewers.join(",")}"`;
+
+  let cmd;
+  if (GIT_PLATFORM === "gitlab") {
+    cmd = `glab mr create --source-branch "${branchName}" --target-branch "${PR_TARGET_BRANCH}" --title "${safeTitle}" --description "${safeBody}" --remove-source-branch --no-editor`;
+    if (reviewers.length > 0) {
+      cmd += ` --reviewer "${reviewers.join(",")}"`;
+    }
+  } else {
+    cmd = `gh pr create --base "${PR_TARGET_BRANCH}" --head "${branchName}" --title "${safeTitle}" --body "${safeBody}"`;
+    if (reviewers.length > 0) {
+      cmd += ` --reviewer "${reviewers.join(",")}"`;
+    }
   }
 
   return shell(cmd, PROJECT_DIR);

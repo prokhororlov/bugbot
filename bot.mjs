@@ -1,11 +1,11 @@
 /**
  * BugBot — Telegram bot powered by Claude Code CLI with worktree workflow:
  * - Creates git worktree + branch for each task
- * - Pushes branch to GitHub and creates PR
+ * - Pushes branch and creates PR/MR (GitHub or GitLab)
  * - Limit: max N active chats across all users
  *
  * Dependencies: grammy, dotenv
- * Requirements: Claude Code CLI + gh CLI installed and authorized
+ * Requirements: Claude Code CLI + gh/glab CLI installed and authorized
  */
 
 import { Bot } from "grammy";
@@ -19,6 +19,9 @@ import {
   ALLOWED_USERS,
   USER_GITHUB_MAP,
   BOT_LANG,
+  GIT_PLATFORM,
+  MERGE_DEV_BRANCH,
+  MERGE_PROD_BRANCH,
 } from "./src/config.mjs";
 import { t } from "./src/i18n.mjs";
 import { isAllowed, shell } from "./src/utils.mjs";
@@ -80,8 +83,8 @@ async function main() {
     { command: "status", description: t("cmd_status") },
     { command: "sessions", description: t("cmd_sessions") },
     { command: "drop", description: t("cmd_drop") },
-    { command: "deploy_dev", description: t("cmd_deploy_dev") },
-    { command: "deploy_prod", description: t("cmd_deploy_prod") },
+    { command: "merge_dev", description: t("cmd_merge_dev") },
+    { command: "merge_prod", description: t("cmd_merge_prod") },
     { command: "id", description: t("cmd_id") },
   ];
   for (const userId of ALLOWED_USERS) {
@@ -99,7 +102,10 @@ async function main() {
   console.log(`Lang: ${BOT_LANG}`);
   console.log(`Project: ${PROJECT_DIR}`);
   console.log(`Worktree mode: ${WORKTREE_MODE}`);
+  console.log(`Platform: ${GIT_PLATFORM}`);
   console.log(`PR target: ${PR_TARGET_BRANCH}`);
+  console.log(`Merge dev: ${PR_TARGET_BRANCH} → ${MERGE_DEV_BRANCH}`);
+  console.log(`Merge prod: ${MERGE_DEV_BRANCH} → ${MERGE_PROD_BRANCH}`);
   console.log(`Max chats: ${MAX_ACTIVE_CHATS}`);
   console.log(`Whitelist: [${[...ALLOWED_USERS].join(", ")}]`);
   console.log(`GitHub map: ${JSON.stringify(Object.fromEntries(USER_GITHUB_MAP))}`);

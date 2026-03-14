@@ -1,8 +1,10 @@
 import {
   PROJECT_DIR,
   PR_TARGET_BRANCH,
-  DEPLOY_ADMIN_ID,
-  lastDevDeploy,
+  MERGE_ADMIN_ID,
+  MERGE_DEV_BRANCH,
+  MERGE_PROD_BRANCH,
+  lastDevMerge,
   MAX_ACTIVE_CHATS,
   USER_GITHUB_MAP,
 } from "./config.mjs";
@@ -216,78 +218,76 @@ export function registerCommands(bot) {
     );
   });
 
-  // /deploy_dev
-  bot.command("deploy_dev", async (ctx) => {
-    if (ctx.from.id !== DEPLOY_ADMIN_ID) {
+  // /merge_dev
+  bot.command("merge_dev", async (ctx) => {
+    if (ctx.from.id !== MERGE_ADMIN_ID) {
       await ctx.reply(`⛔ ${t("admin_only")}`);
       return;
     }
 
-    await ctx.reply(`🚀 ${t("deploying_dev")}`);
+    await ctx.reply(`🔀 ${t("merging_dev", PR_TARGET_BRANCH, MERGE_DEV_BRANCH)}`);
     await ctx.replyWithChatAction("typing");
 
-    lastDevDeploy.status = "running";
-    lastDevDeploy.timestamp = Date.now();
-    lastDevDeploy.triggeredBy = ctx.from.id;
+    lastDevMerge.status = "running";
+    lastDevMerge.timestamp = Date.now();
+    lastDevMerge.triggeredBy = ctx.from.id;
 
     try {
-      shell(`gh workflow run "Deploy Dev" --ref dev`, PROJECT_DIR);
-      lastDevDeploy.status = "success";
-      lastDevDeploy.timestamp = Date.now();
-      await ctx.reply(`✅ ${t("deploy_dev_ok")}`);
+      shell(`git fetch origin`, PROJECT_DIR);
+      shell(`git checkout "${MERGE_DEV_BRANCH}"`, PROJECT_DIR);
+      shell(`git pull origin "${MERGE_DEV_BRANCH}"`, PROJECT_DIR);
+      shell(`git merge "origin/${PR_TARGET_BRANCH}"`, PROJECT_DIR);
+      shell(`git push origin "${MERGE_DEV_BRANCH}"`, PROJECT_DIR);
+
+      lastDevMerge.status = "success";
+      lastDevMerge.timestamp = Date.now();
+      await ctx.reply(`✅ ${t("merge_dev_ok", PR_TARGET_BRANCH, MERGE_DEV_BRANCH)}`);
     } catch (err) {
-      console.error("Deploy workflow trigger failed:", err.message);
-      try {
-        shell(
-          `gh api repos/{owner}/{repo}/actions/workflows/deploy-dev.yml/dispatches -f ref=dev`,
-          PROJECT_DIR
-        );
-        lastDevDeploy.status = "success";
-        lastDevDeploy.timestamp = Date.now();
-        await ctx.reply(`✅ ${t("deploy_dev_api_ok")}`);
-      } catch (err2) {
-        lastDevDeploy.status = "failed";
-        lastDevDeploy.timestamp = Date.now();
-        await ctx.reply(`❌ ${t("deploy_dev_failed", err2.message.slice(0, 200))}`);
-      }
+      console.error("Merge dev failed:", err.message);
+      lastDevMerge.status = "failed";
+      lastDevMerge.timestamp = Date.now();
+      try { shell(`git merge --abort`, PROJECT_DIR); } catch {}
+      await ctx.reply(`❌ ${t("merge_dev_failed", err.message.slice(0, 300))}`);
+    } finally {
+      try { shell(`git checkout "${PR_TARGET_BRANCH}"`, PROJECT_DIR); } catch {}
     }
   });
 
-  // /deploy_prod
-  bot.command("deploy_prod", async (ctx) => {
-    if (ctx.from.id !== DEPLOY_ADMIN_ID) {
+  // /merge_prod
+  bot.command("merge_prod", async (ctx) => {
+    if (ctx.from.id !== MERGE_ADMIN_ID) {
       await ctx.reply(`⛔ ${t("admin_only")}`);
       return;
     }
 
-    if (lastDevDeploy.status !== "success") {
-      let reason = t("deploy_prod_blocked_none");
-      if (lastDevDeploy.status === "failed") {
-        reason = t("deploy_prod_blocked_failed");
-      } else if (lastDevDeploy.status === "running") {
-        reason = t("deploy_prod_blocked_running");
+    if (lastDevMerge.status !== "success") {
+      let reason = t("merge_prod_blocked_none");
+      if (lastDevMerge.status === "failed") {
+        reason = t("merge_prod_blocked_failed");
+      } else if (lastDevMerge.status === "running") {
+        reason = t("merge_prod_blocked_running");
       }
-      await ctx.reply(`⛔ ${t("deploy_prod_blocked", reason)}`);
+      await ctx.reply(`⛔ ${t("merge_prod_blocked", reason)}`);
       return;
     }
 
-    await ctx.reply(`🚀 ${t("deploying_prod")}`);
+    await ctx.reply(`🔀 ${t("merging_prod", MERGE_DEV_BRANCH, MERGE_PROD_BRANCH)}`);
     await ctx.replyWithChatAction("typing");
 
     try {
-      shell(`gh workflow run "Deploy Prod" --ref main`, PROJECT_DIR);
-      await ctx.reply(`✅ ${t("deploy_prod_ok")}`);
+      shell(`git fetch origin`, PROJECT_DIR);
+      shell(`git checkout "${MERGE_PROD_BRANCH}"`, PROJECT_DIR);
+      shell(`git pull origin "${MERGE_PROD_BRANCH}"`, PROJECT_DIR);
+      shell(`git merge "origin/${MERGE_DEV_BRANCH}"`, PROJECT_DIR);
+      shell(`git push origin "${MERGE_PROD_BRANCH}"`, PROJECT_DIR);
+
+      await ctx.reply(`✅ ${t("merge_prod_ok", MERGE_DEV_BRANCH, MERGE_PROD_BRANCH)}`);
     } catch (err) {
-      console.error("Deploy prod workflow trigger failed:", err.message);
-      try {
-        shell(
-          `gh api repos/{owner}/{repo}/actions/workflows/deploy-prod.yml/dispatches -f ref=main`,
-          PROJECT_DIR
-        );
-        await ctx.reply(`✅ ${t("deploy_prod_api_ok")}`);
-      } catch (err2) {
-        await ctx.reply(`❌ ${t("deploy_prod_failed", err2.message.slice(0, 200))}`);
-      }
+      console.error("Merge prod failed:", err.message);
+      try { shell(`git merge --abort`, PROJECT_DIR); } catch {}
+      await ctx.reply(`❌ ${t("merge_prod_failed", err.message.slice(0, 300))}`);
+    } finally {
+      try { shell(`git checkout "${PR_TARGET_BRANCH}"`, PROJECT_DIR); } catch {}
     }
   });
 }

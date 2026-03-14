@@ -26,6 +26,7 @@ export const TIMEOUT_SEC = parseInt(process.env.TIMEOUT_SEC || "300", 10);
 export const PROJECT_DIR = process.env.PROJECT_DIR;
 if (!PROJECT_DIR) throw new Error("PROJECT_DIR is not set");
 export const PR_TARGET_BRANCH = process.env.PR_TARGET_BRANCH || "dev";
+export const GIT_PLATFORM = process.env.GIT_PLATFORM || "github"; // "github" or "gitlab"
 
 // ── Worktree ────────────────────────────────────────────────
 
@@ -34,12 +35,14 @@ export const WORKTREE_BASE_DIR =
   process.env.WORKTREE_BASE_DIR || join(PROJECT_DIR, ".worktrees");
 export const BRANCH_PREFIX = process.env.BRANCH_PREFIX || "bugbot/";
 
-// ── Deploy ──────────────────────────────────────────────────
+// ── Merge (admin commands) ───────────────────────────────────
 
-export const DEPLOY_ADMIN_ID = parseInt(process.env.DEPLOY_ADMIN_ID || "0", 10);
+export const MERGE_ADMIN_ID = parseInt(process.env.MERGE_ADMIN_ID || "0", 10);
+export const MERGE_DEV_BRANCH = process.env.MERGE_DEV_BRANCH || PR_TARGET_BRANCH;
+export const MERGE_PROD_BRANCH = process.env.MERGE_PROD_BRANCH || "main";
 
 /** @type {{ status: "success"|"failed"|"running"|null, timestamp: number|null, triggeredBy: number|null }} */
-export const lastDevDeploy = { status: null, timestamp: null, triggeredBy: null };
+export const lastDevMerge = { status: null, timestamp: null, triggeredBy: null };
 
 // ── Whitelist ───────────────────────────────────────────────
 
