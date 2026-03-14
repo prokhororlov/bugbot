@@ -82,6 +82,7 @@ async function main() {
     { command: "done", description: t("cmd_done") },
     { command: "status", description: t("cmd_status") },
     { command: "sessions", description: t("cmd_sessions") },
+    { command: "stop", description: t("cmd_stop") },
     { command: "drop", description: t("cmd_drop") },
     { command: "merge_dev", description: t("cmd_merge_dev") },
     { command: "merge_prod", description: t("cmd_merge_prod") },

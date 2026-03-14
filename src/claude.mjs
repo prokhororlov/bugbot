@@ -94,6 +94,8 @@ export function callClaude(prompt, session, onProgress) {
       stdio: ["pipe", "pipe", "pipe"],
     });
 
+    session.activeProc = proc;
+
     const rl = createInterface({ input: proc.stdout, crlfDelay: Infinity });
 
     let textOutput = "";
@@ -105,6 +107,12 @@ export function callClaude(prompt, session, onProgress) {
     rl.on("line", (line) => {
       let obj;
       try { obj = JSON.parse(line); } catch { return; }
+
+      // New assistant turn — reset text so we only keep the last one
+      if (obj.type === "message_start") {
+        textOutput = "";
+        return;
+      }
 
       if (obj.type === "content_block_start" && obj.content_block?.type === "tool_use") {
         const idx = obj.index ?? 0;
@@ -179,6 +187,8 @@ export function callClaude(prompt, session, onProgress) {
         const match = stderr.match(/session_id[:\s]+"?([a-f0-9-]+)"?/i);
         if (match) sessionId = match[1];
       }
+
+      session.activeProc = null;
 
       if (code === 0 || textOutput.trim()) {
         resolve({

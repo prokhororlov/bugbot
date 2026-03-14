@@ -10,7 +10,7 @@ import {
 } from "./config.mjs";
 import { t } from "./i18n.mjs";
 import { getChatKey, shell } from "./utils.mjs";
-import { activeSessions, getOrCreateSession, destroySession } from "./session.mjs";
+import { activeSessions, activeRequests, getOrCreateSession, destroySession } from "./session.mjs";
 import { pushBranch, createPR } from "./worktree.mjs";
 import { generatePrSummary } from "./claude.mjs";
 
@@ -207,6 +207,25 @@ export function registerCommands(bot) {
       `🗑 ${t("session_dropped", session.branchName)}`,
       { parse_mode: "HTML" }
     );
+  });
+
+  // /stop
+  bot.command("stop", async (ctx) => {
+    const chatKey = getChatKey(ctx);
+    const session = activeSessions.get(chatKey);
+
+    if (!session || !activeRequests.has(chatKey)) {
+      await ctx.reply(`ℹ️ ${t("nothing_to_stop")}`);
+      return;
+    }
+
+    if (session.activeProc) {
+      try { session.activeProc.kill("SIGTERM"); } catch {}
+      session.activeProc = null;
+    }
+    activeRequests.delete(chatKey);
+
+    await ctx.reply(`🛑 ${t("stopped")}`);
   });
 
   // /id

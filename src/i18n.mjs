@@ -13,6 +13,7 @@ const translations = {
     cmd_merge_dev: "Merge dev (admin)",
     cmd_merge_prod: "Merge prod (admin)",
     cmd_id: "My Telegram ID",
+    cmd_stop: "Stop current agent",
 
     // bot.mjs — startup logs (console, not translated to keep logs in English)
 
@@ -23,6 +24,7 @@ const translations = {
       "Commands:\n" +
       "/new — new session (branch)\n" +
       "/done — finish, push & create PR\n" +
+      "/stop — stop current agent\n" +
       "/status — current session status\n" +
       "/sessions — all active sessions\n" +
       "/drop — delete session without PR\n" +
@@ -81,6 +83,10 @@ const translations = {
     id_info: (tgId, ghUser) =>
       `Telegram ID: <code>${tgId}</code>\n` +
       `GitHub: <code>${ghUser || "not set"}</code>`,
+
+    // commands.mjs — /stop
+    nothing_to_stop: "No active request to stop.",
+    stopped: "Agent stopped.",
 
     // commands.mjs — /merge_dev, /merge_prod
     admin_only: "This command is admin-only.",
@@ -152,6 +158,7 @@ const translations = {
     cmd_merge_dev: "Мерж dev (admin)",
     cmd_merge_prod: "Мерж prod (admin)",
     cmd_id: "Мой Telegram ID",
+    cmd_stop: "Остановить агента",
 
     start_hello:
       "Привет! Я BugBot.\n\n" +
@@ -159,6 +166,7 @@ const translations = {
       "Команды:\n" +
       "/new — новый чат (сессия + ветка)\n" +
       "/done — завершить чат, запушить и создать PR\n" +
+      "/stop — остановить агента\n" +
       "/status — статус текущей сессии\n" +
       "/sessions — все активные сессии\n" +
       "/drop — удалить текущую сессию без PR\n" +
@@ -211,6 +219,9 @@ const translations = {
     id_info: (tgId, ghUser) =>
       `Telegram ID: <code>${tgId}</code>\n` +
       `GitHub: <code>${ghUser || "не задан"}</code>`,
+
+    nothing_to_stop: "Нет активного запроса для остановки.",
+    stopped: "Агент остановлен.",
 
     admin_only: "Команда доступна только администратору.",
     merging_dev: (src, dst) => `Мержу ${src} в ${dst}...`,
