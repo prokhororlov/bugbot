@@ -97,10 +97,11 @@ export function registerCommands(bot) {
 
       const ghUser = USER_GITHUB_MAP.get(ctx.from.id);
       const coAuthors = [];
-      for (const [tgId, ghUsername] of USER_GITHUB_MAP) {
-        if (tgId !== ctx.from.id) {
-          coAuthors.push(`Co-authored-by: ${ghUsername}`);
-        }
+      // Add session creator as co-author if they're not the bot owner (MERGE_ADMIN_ID)
+      // Bot owner's GH account is already the commit author
+      if (session.userId !== MERGE_ADMIN_ID) {
+        const creatorGh = USER_GITHUB_MAP.get(session.userId);
+        if (creatorGh) coAuthors.push(`Co-authored-by: ${creatorGh}`);
       }
 
       await ctx.reply(`🧠 ${t("generating_pr")}`);
