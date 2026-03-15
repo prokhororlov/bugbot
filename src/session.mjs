@@ -3,6 +3,7 @@ import {
   WORKTREE_MODE,
   MAX_ACTIVE_CHATS,
   SESSION_TTL_MS,
+  PR_TARGET_BRANCH,
 } from "./config.mjs";
 import { t } from "./i18n.mjs";
 import { generateBranchName, shell } from "./utils.mjs";
@@ -32,6 +33,13 @@ export function getOrCreateSession(chatKey, userId) {
 
   if (WORKTREE_MODE) {
     worktreePath = createWorktree(branchName);
+  } else {
+    try {
+      shell(`git fetch origin ${PR_TARGET_BRANCH}`, PROJECT_DIR);
+    } catch (e) {
+      console.error("git fetch failed:", e.message);
+    }
+    shell(`git checkout -b "${branchName}" "origin/${PR_TARGET_BRANCH}"`, PROJECT_DIR);
   }
 
   const session = {

@@ -28,6 +28,7 @@ export function registerCommands(bot) {
     if (activeSessions.has(chatKey)) {
       const old = destroySession(chatKey);
       if (old) {
+        try { shell(`git checkout "${PR_TARGET_BRANCH}"`, PROJECT_DIR); } catch {}
         try { shell(`git branch -D "${old.branchName}"`, PROJECT_DIR); } catch {}
         await ctx.reply(
           `🗑 ${t("old_session_deleted", old.branchName)}`,
@@ -200,6 +201,9 @@ export function registerCommands(bot) {
       return;
     }
 
+    try {
+      shell(`git checkout "${PR_TARGET_BRANCH}"`, PROJECT_DIR);
+    } catch {}
     try {
       shell(`git branch -D "${session.branchName}"`, PROJECT_DIR);
     } catch {}
